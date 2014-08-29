@@ -1,44 +1,58 @@
-function Uploader(input, url, callback){
-	
-	self = this;
+Uploader = {
+	ini: function(className, urlPost){
+		var uploader = $('.'+className);
+		uploader.each(function(index){
+			self = $(this);
 
-	self.input = input;
-	self.url = url;
-	self.callback = callback;
+			$('<iframe/>', {
+			    class:   'uploadframe',
+			    id: 'id'+index,
+			    name: 'name' +index,
+			    style: 'width:0px;height:0px;border:0px'
+			}).appendTo(self);
 
-	if (input.length){
-		self.files = input[0].files;
-	}else{
-		self.files = input.files;
-	}
-	
-	self.post = function (){
-		fd = new FormData();
+			$('<form/>',{
+				target: 'name' +index,
+				url: urlPost,
+				type: 'POST'
+			}).appendTo(self);
 
-		for (var i in self.files) {
-			fd.append('file'+i, self.files[i]);
-		};
+			var form = self.find('form');
 
-		$.ajax({
-		  type: "POST",
-		  url: this.url,
-		  data: fd,
-		  success: function(resultString){
-		  	result = JSON.parse(resultString);
-		  	self.callback(result);
-		  },
-		  error: function(){
-		  	self.callback(false);
-		  }
+			if (self.attr('data-multiple')=='true'){
+				$('<input/>',{
+					type: 'file',
+					multiple: 'multiple'
+				}).appendTo(form);
+			}else{
+				$('<input/>',{
+					type: 'file'
+				}).appendTo(form);
+			}
+
+			var input = form.find('input');
+
+			self.on('click', function(){
+				input.click();
+			});
+
+			input.on('change',function(){
+				form.submit();
+			})
 		});
 
-		//self.callback('Файл отправлен');
-	};
 
-	$(self.input).on('change', function(){
-		self.post();
-	});
 
+
+	},
+	call: function(dataString){
+		var data = JSON.parse(dataString);
+		console.log(data);
+	}
 };
+
+$(function () {
+	Uploader.ini('uploader','upload.php');
+});
 
 
